@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Union, cast, List, Set, Tuple, Optional, Dict
 import numpy as np
 from nano_vectordb import NanoVectorDB
-from hyperdb import HypergraphDB
+from hyperdb.hypergraph import HypergraphDB
 from .utils import load_json, logger, write_json
 from .base import (
     BaseKVStorage,
