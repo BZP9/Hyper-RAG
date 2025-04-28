@@ -37,7 +37,7 @@ async def embedding_func(texts: list[str]) -> np.ndarray:
     )
 
 
-def insert_texts_with_retry(rag, texts, retries=3, delay=5):
+def insert_texts_with_retry(rag: HyperRAG, texts, retries=3, delay=5):
     for _ in range(retries):
         try:
             rag.insert(texts)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     )
 
     # read the text file
-    mock_data_file_path = Path("examples/mock_data.txt")
+    mock_data_file_path = Path("examples/cvs.txt")
     with open(mock_data_file_path, "r", encoding="utf-8") as file:
         texts = file.read()
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print("\n\n\nPerforming Naive RAG...")
         print(
             rag.query(
-                "What are the top themes in this story?", 
+                "誰最適合去洗刷馬桶和為什麼?", 
                 param=QueryParam(mode="naive")
             )
         )
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         print("\n\n\nPerforming Hyper-RAG...")
         print(
             rag.query(
-                "What are the top themes in this story?", 
+                "誰最適合去洗刷馬桶和為什麼?", 
                 param=QueryParam(mode="hyper")
             )
         )
@@ -97,9 +97,11 @@ if __name__ == "__main__":
         print("\n\n\nPerforming Hyper-RAG-Lite...")
         print(
             rag.query(
-                "What are the top themes in this story?",
+                "誰最適合去洗刷馬桶和為什麼?",
                 param=QueryParam(mode="hyper-lite"),
             )
         )
     except Exception as e:
         print(f"Error performing hyper-rag-lite search: {e}")
+
+    print('FINISH')

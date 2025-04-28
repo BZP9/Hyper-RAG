@@ -30,15 +30,14 @@ from .utils import compute_args_hash, wrap_embedding_func_with_attrs
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-from my_config import MDL_PATH
+from my_config import MDL_PATH, EMB_DIM
 from llama_cpp import Llama
-chat_mdl = Llama(
-    model_path=MDL_PATH,
-    chat_format='qwen',
-    verbose=False,
-    n_ctx=32768,
-    embedding=True
-)
+# chat_mdl = Llama(
+#     model_path=MDL_PATH,
+#     chat_format='qwen',
+#     verbose=False,
+#     n_ctx=32768,
+# )
 
 import ollama
 client = ollama.AsyncClient()
@@ -51,7 +50,7 @@ async def getResponse(text):
 
 @retry(
     stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=4, max=10),
+    wait=wait_exponential(multiplier=1, min=4, max=120),
     retry=retry_if_exception_type((RateLimitError, APIConnectionError, Timeout)),
 )
 async def openai_complete_if_cache(
@@ -63,12 +62,12 @@ async def openai_complete_if_cache(
     api_key=None,
     **kwargs,
 ) -> str:
-    # if api_key:
-    #     os.environ["OPENAI_API_KEY"] = api_key
+    if api_key:
+        os.environ["OPENAI_API_KEY"] = api_key
 
-    # openai_async_client = (
-    #     AsyncOpenAI() if base_url is None else AsyncOpenAI(base_url=base_url)
-    # )
+    openai_async_client = (
+        AsyncOpenAI() if base_url is None else AsyncOpenAI(base_url=base_url)
+    )
     hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
     messages = []
     if system_prompt is not None:
@@ -81,20 +80,23 @@ async def openai_complete_if_cache(
         if if_cache_return is not None:
             return if_cache_return["return"]
 
-    # response = await openai_async_client.chat.completions.create(
-    #     model=model, messages=messages, **kwargs
-    # )
-    print('USING CHATTING')
-    response = await chat_mdl.create_chat_completion(
-        messages=messages, **kwargs
+    print(f'\n\n{messages}')
+    response = await openai_async_client.chat.completions.create(
+        model=model, messages=messages, **kwargs
     )
-    print('FINISH CHATTING')
+    # print('generating response...')
+    # print(messages)
+    # response = chat_mdl.create_chat_completion(
+    #     messages=messages, **kwargs
+    # )
+    # print(f"\n\n{response['choices'][0]['message']['content']}")
     if hashing_kv is not None:
         await hashing_kv.upsert(
-            # {args_hash: {"return": response.choices[0].message.content, "model": model}}
-            {args_hash: {"return": response['choices'][0]['message']['content'], "model": model}}
+            {args_hash: {"return": response.choices[0].message.content, "model": model}}
+            # {args_hash: {"return": response['choices'][0]['message']['content'], "model": model}}
         )
-    return response['choices'][0]['message']['content']
+    return response.choices[0].message.content
+    # return response['choices'][0]['message']['content']
 
 
 @retry(
@@ -285,7 +287,7 @@ async def bedrock_complete(
     )
 
 
-@wrap_embedding_func_with_attrs(embedding_dim=1536, max_token_size=8192)
+@wrap_embedding_func_with_attrs(embedding_dim=EMB_DIM, max_token_size=8192)
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=4, max=60),
@@ -306,16 +308,16 @@ async def openai_embedding(
     # response = await openai_async_client.embeddings.create(
     #     model=model, input=texts, encoding_format="float"
     # )
-    print('USING EMBEDDING')
+    # print('USING EMBEDDING')
     response = await client.embed(
         model='snowflake-arctic-embed2:568m', input=texts
     )
-    print('FINISH EMBEDDING')
+    # print('FINISH EMBEDDING')
     # return np.array([dp.embedding for dp in response.data])
     return np.array(response["embeddings"])
 
 
-@wrap_embedding_func_with_attrs(embedding_dim=1536, max_token_size=8192)
+@wrap_embedding_func_with_attrs(embedding_dim=EMB_DIM, max_token_size=8192)
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=4, max=10),
