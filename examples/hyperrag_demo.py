@@ -71,11 +71,12 @@ if __name__ == "__main__":
     insert_texts_with_retry(rag, texts)
 
     # Perform different types of queries and handle potential errors
+    QUERY = "誰最適合去當資料工程師和為什麼?"
     try:
         print("\n\n\nPerforming Naive RAG...")
         print(
             rag.query(
-                "誰最適合去洗刷馬桶和為什麼?", 
+                QUERY, 
                 param=QueryParam(mode="naive")
             )
         )
@@ -86,7 +87,7 @@ if __name__ == "__main__":
         print("\n\n\nPerforming Hyper-RAG...")
         print(
             rag.query(
-                "誰最適合去洗刷馬桶和為什麼?", 
+                QUERY, 
                 param=QueryParam(mode="hyper")
             )
         )
@@ -97,7 +98,7 @@ if __name__ == "__main__":
         print("\n\n\nPerforming Hyper-RAG-Lite...")
         print(
             rag.query(
-                "誰最適合去洗刷馬桶和為什麼?",
+                QUERY,
                 param=QueryParam(mode="hyper-lite"),
             )
         )

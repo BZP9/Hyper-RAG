@@ -80,7 +80,7 @@ async def openai_complete_if_cache(
         if if_cache_return is not None:
             return if_cache_return["return"]
 
-    print(f'\n\n{messages}')
+    # print(f'\n\n{messages}')
     response = await openai_async_client.chat.completions.create(
         model=model, messages=messages, **kwargs
     )

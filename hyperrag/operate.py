@@ -41,6 +41,7 @@ def chunking_by_token_size(
         chunk_content = decode_tokens_by_tiktoken(
             tokens[start : start + max_token_size], model_name=tiktoken_model
         )
+        print(min(max_token_size, len(tokens) - start))
         results.append(
             {
                 "tokens": min(max_token_size, len(tokens) - start),
@@ -1297,7 +1298,7 @@ async def naive_query(
     )
 
     if len(response) > len(sys_prompt):
-        response = (
+        response: str = (
             response[len(sys_prompt) :]
             .replace(sys_prompt, "")
             .replace("user", "")
